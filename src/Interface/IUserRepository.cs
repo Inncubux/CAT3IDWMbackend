@@ -9,6 +9,6 @@ namespace API.src.Interface
     public interface IUserRepository
     {
         Task<bool> CreateUser(User user);
-        Task<bool> GetUserByEmail(string email);
+        Task<User> GetUserByEmail(string email);
     }
 }
