@@ -8,38 +8,43 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using API.src.Models;
+using API.src.Interface;
 
 namespace API.src.Services
 {
-    public class TokenService
+    public class TokenService: ITokenService
     {
         private readonly IConfiguration _configuration;
+        private readonly SymmetricSecurityKey _key;
 
         public TokenService(IConfiguration configuration)
         {
             _configuration = configuration;
+            var signinKey = _configuration["Jwt:signingKey"];
+            _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signinKey));
         }
 
         public string CreateToken(User user)
         {
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.NameIdentifier, user.Id)
+                new Claim(JwtRegisteredClaimNames.Email, user.Email),
+            };
+            var creds = new SigningCredentials(_key, SecurityAlgorithms.HmacSha256);
+
+            var now = DateTime.UtcNow;
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(claims),
+                Expires = now.AddMinutes(double.Parse(_configuration["Jwt:ExpiresInMinutes"])),
+                SigningCredentials = creds,
+                Issuer = _configuration["Jwt:Issuer"],
+                Audience = _configuration["Jwt:Audience"]
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"],
-                audience: _configuration["Jwt:Audience"],
-                claims: claims,
-                expires: DateTime.Now.AddMinutes(double.Parse(_configuration["Jwt:ExpiresInMinutes"])),
-                signingCredentials: creds);
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
         }
     }
 }

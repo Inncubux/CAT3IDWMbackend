@@ -13,7 +13,8 @@ namespace API.src.Helpers
     {
         public AutoMapperProfile()
         {
-            CreateMap<CreateUserDto, User>();
+            CreateMap<CreateUserDto, User>()
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email.ToLower()));
             CreateMap<User, UserDto>();
         }
     }

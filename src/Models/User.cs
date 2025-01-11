@@ -12,8 +12,10 @@ namespace API.src.Models
     public class User: IdentityUser
     {
         [EmailAddress]
-        public string Email {get; set;} = string.Empty!;
+        public new string Email {get; set;} = string.Empty!;
         [PasswordAttribute(6)]
-        public string Password { get; set; } = string.Empty!;
+        public new string Password { get; set; } = string.Empty!;
+
+        public ICollection<Post> Posts { get; set; } = new List<Post>();
     }
 }

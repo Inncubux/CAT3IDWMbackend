@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using API.src.DTOs;
-using API.src.DTOs.Auth;
 using API.src.Models;
 
 namespace API.src.Interface
 {
-    public interface IUserRepository
+    public interface IPostRepository
     {
-        Task<UserDto> CreateUser(CreateUserDto createUserDtor);
-        Task<User?> GetUserByEmail(string email);
+        Task<CreatePostDto> CreatePost(Post post);
+        Task<IEnumerable<Post>> GetPost();
     }
 }
